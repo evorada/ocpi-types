@@ -12,11 +12,16 @@ prepare_dirs:
 	@$(foreach dir,$(LANGUAGES),mkdir -p $(dir);)
 
 # Define rules for Go
-go: $(patsubst schemas/%.json,go/%.go,$(JSON_FILES))
-
-go/%.go: schemas/%.json
-	@echo "Generating Go definition for $< into $@"
-	@quicktype -s schema $< -o $@ --lang go
+# Go requires one package per directory, so each schema version is generated
+# into its own subpackage (e.g. schemas/v2.1.1.json -> go/v211/v211.go, package v211).
+# This lets multiple OCPI versions coexist without redeclaring the same types.
+go:
+	@for f in $(JSON_FILES); do \
+		pkg=$$(basename $$f .json | tr -d '.'); \
+		echo "Generating Go definition for $$f into go/$$pkg/$$pkg.go"; \
+		mkdir -p go/$$pkg; \
+		quicktype -s schema $$f -o go/$$pkg/$$pkg.go --lang go --package $$pkg; \
+	done
 
 # Define rules for Python
 python: $(patsubst schemas/%.json,python/%.py,$(JSON_FILES))

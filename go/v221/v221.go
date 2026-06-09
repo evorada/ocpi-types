@@ -4,7 +4,7 @@
 //    v221, err := UnmarshalV221(bytes)
 //    bytes, err = v221.Marshal()
 
-package main
+package v221
 
 import "encoding/json"
 

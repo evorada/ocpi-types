@@ -4,7 +4,7 @@
 //    v211, err := UnmarshalV211(bytes)
 //    bytes, err = v211.Marshal()
 
-package main
+package v211
 
 import "encoding/json"
 
@@ -19,14 +19,14 @@ func (r *V211) Marshal() ([]byte, error) {
 }
 
 type V211 struct {
-	Cdr         *Cdr           `json:"cdr,omitempty"`
-	Connector   *Connector     `json:"connector,omitempty"`
-	Credentials *Credentials   `json:"credentials,omitempty"`
-	Evse        *Evse          `json:"evse,omitempty"`
-	Location    *V211_Location `json:"location,omitempty"`
-	Session     *Session       `json:"session,omitempty"`
-	Tariff      *Tariff        `json:"tariff,omitempty"`
-	Token       *Token         `json:"token,omitempty"`
+	Cdr         *Cdr          `json:"cdr,omitempty"`
+	Connector   *Connector    `json:"connector,omitempty"`
+	Credentials *Credentials  `json:"credentials,omitempty"`
+	Evse        *Evse         `json:"evse,omitempty"`
+	Location    *V211Location `json:"location,omitempty"`
+	Session     *Session      `json:"session,omitempty"`
+	Tariff      *Tariff       `json:"tariff,omitempty"`
+	Token       *Token        `json:"token,omitempty"`
 }
 
 type Cdr struct {
@@ -226,7 +226,7 @@ type Credentials struct {
 	URL             *string          `json:"url,omitempty"`
 }
 
-type V211_Location struct {
+type V211Location struct {
 	Address            *string           `json:"address,omitempty"`
 	ChargingWhenClosed *bool             `json:"charging_when_closed"`
 	City               *string           `json:"city,omitempty"`
