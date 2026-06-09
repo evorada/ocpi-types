@@ -2,7 +2,7 @@
 
 Auto-generated TypeScript definitions for the OCPI protocol.
 
-Supporting OCPI 2.1.1 (`v2.1.1`) and 2.2.1 (`v2.2.1`).
+Supporting OCPI 2.1.1 (`v2.1.1`), 2.2.1 (`v2.2.1`), and 2.3.0 — the latter as three variants: the core edition (`v2.3.0`), with the Payments module (`v2.3.0-payments`), and with the Bookings module (`v2.3.0-bookings`).
 
 ## Installation
 

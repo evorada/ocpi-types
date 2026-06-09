@@ -17,7 +17,7 @@ prepare_dirs:
 # This lets multiple OCPI versions coexist without redeclaring the same types.
 go:
 	@for f in $(JSON_FILES); do \
-		pkg=$$(basename $$f .json | tr -d '.'); \
+		pkg=$$(basename $$f .json | tr -cd '[:alnum:]'); \
 		echo "Generating Go definition for $$f into go/$$pkg/$$pkg.go"; \
 		mkdir -p go/$$pkg; \
 		quicktype -s schema $$f -o go/$$pkg/$$pkg.go --lang go --package $$pkg; \

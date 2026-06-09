@@ -12,6 +12,10 @@ The generated code had to be manually tweaked and cleaned up therefore running `
 
 * The 2.1.1 schemas have been adapted from [`ChargeMap/ocpi-protocol`](https://github.com/ChargeMap/ocpi-protocol/tree/master/resources/jsonSchemas).
 * The 2.2.1 schemas have been derived from the official [`ocpi/ocpi` `v2.2.1-d2`](https://github.com/ocpi/ocpi/tree/v2.2.1-d2) specification.
+* The 2.3.0 schemas have been derived from the official OCPI 2.3.0 release, which is published as three branches. Each is a separate schema:
+  * `v2.3.0` — the core edition ([`v2.3.0-ed1`](https://github.com/ocpi/ocpi/tree/v2.3.0-ed1)).
+  * `v2.3.0-payments` — core plus the Payments module ([`v2.3.0-payments`](https://github.com/ocpi/ocpi/tree/v2.3.0-payments)).
+  * `v2.3.0-bookings` — core plus the Bookings module ([`v2.3.0-bookings`](https://github.com/ocpi/ocpi/tree/v2.3.0-bookings)).
 
 ## Continuous integration
 

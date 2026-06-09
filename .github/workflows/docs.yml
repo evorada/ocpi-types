@@ -77,7 +77,7 @@ jobs:
           # are valid Python module identifiers (v2.1.1 -> v211).
           stage="$(mktemp -d)"
           for f in python/*.py; do
-            cp "$f" "$stage/$(basename "$f" .py | tr -d '.').py"
+            cp "$f" "$stage/$(basename "$f" .py | tr -cd '[:alnum:]').py"
           done
           (cd "$stage" && pdoc -o "$GITHUB_WORKSPACE/dist" --docformat google v*.py)
       - uses: actions/upload-artifact@v4
