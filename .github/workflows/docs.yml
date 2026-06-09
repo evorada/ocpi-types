@@ -1,0 +1,182 @@
+name: Docs
+
+# Generates API documentation for every language binding and publishes a
+# combined site to GitHub Pages. Each language builds in its own parallel job;
+# the deploy job assembles the per-language output into one site.
+#
+# Enable once under: repo Settings → Pages → Build and deployment → Source:
+# "GitHub Actions".
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  go-docs:
+    name: Go docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Generate Go docs
+        run: |
+          set -e
+          go install github.com/princjef/gomarkdoc/cmd/gomarkdoc@latest
+          GOMARKDOC="$(go env GOPATH)/bin/gomarkdoc"
+          # gomarkdoc needs a module context; the generated packages only use
+          # the standard library, so a throwaway module is enough.
+          work="$(mktemp -d)"
+          cp -R go/v* "$work"/
+          (cd "$work" && go mod init ocpi-types >/dev/null)
+          mkdir -p dist
+          links=""
+          for d in "$work"/v*/; do
+            pkg="$(basename "$d")"
+            (cd "$work" && "$GOMARKDOC" "./$pkg") > "$work/$pkg.md"
+            {
+              printf '<!doctype html><meta charset="utf-8"><title>%s — Go</title>' "$pkg"
+              printf '<style>body{font:16px/1.6 system-ui,sans-serif;max-width:960px;margin:2rem auto;padding:0 1rem}pre{background:#f6f8fa;padding:.75rem;border-radius:6px;overflow:auto}code{font-family:ui-monospace,monospace}h1,h2,h3{line-height:1.25}</style>'
+              npx --yes marked -i "$work/$pkg.md"
+            } > "dist/$pkg.html"
+            links="$links<li><a href=\"$pkg.html\">$pkg</a></li>"
+          done
+          printf '<!doctype html><meta charset="utf-8"><title>OCPI Types — Go</title><h1>OCPI Types — Go</h1><ul>%s</ul>' "$links" > dist/index.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-go
+          path: dist
+
+  python-docs:
+    name: Python docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate Python docs
+        run: |
+          set -e
+          pip install pdoc python-dateutil
+          # pdoc imports each module, so stage copies under dot-free names that
+          # are valid Python module identifiers (v2.1.1 -> v211).
+          stage="$(mktemp -d)"
+          for f in python/*.py; do
+            cp "$f" "$stage/$(basename "$f" .py | tr -d '.').py"
+          done
+          (cd "$stage" && pdoc -o "$GITHUB_WORKSPACE/dist" --docformat google v*.py)
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-python
+          path: dist
+
+  rust-docs:
+    name: Rust docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Generate Rust docs
+        run: |
+          set -e
+          work="$(mktemp -d)"
+          mkdir -p "$work/src"
+          printf '[package]\nname = "ocpi_types"\nversion = "0.0.0"\nedition = "2021"\n\n[dependencies]\nserde = { version = "1", features = ["derive"] }\nserde_json = "1"\n' > "$work/Cargo.toml"
+          : > "$work/src/lib.rs"
+          for f in rust/*.rs; do
+            mod="$(basename "$f" .rs | tr -d '.')"
+            cp "$f" "$work/src/$mod.rs"
+            printf '#[allow(dead_code, non_camel_case_types)]\npub mod %s;\n' "$mod" >> "$work/src/lib.rs"
+          done
+          (cd "$work" && cargo doc --no-deps)
+          mkdir -p dist
+          cp -R "$work/target/doc/." dist/
+          # land on the crate page rather than the bare file index
+          printf '<!doctype html><meta http-equiv="refresh" content="0; url=ocpi_types/index.html">' > dist/index.html
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-rust
+          path: dist
+
+  typescript-docs:
+    name: TypeScript docs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+      - name: Generate TypeScript docs
+        working-directory: typescript
+        # index.ts re-exports every version, so ts-docs documents all of them.
+        # ts-docs mangles absolute --out paths, so use a relative dir.
+        run: |
+          npm ci
+          npx ts-docs index.ts --name "OCPI Types" --out _site_ts
+      - uses: actions/upload-artifact@v4
+        with:
+          name: docs-typescript
+          path: typescript/_site_ts
+
+  deploy:
+    name: Assemble & deploy
+    needs: [go-docs, python-docs, rust-docs, typescript-docs]
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Assemble site
+        run: |
+          set -e
+          mkdir -p site
+          mv artifacts/docs-go site/go
+          mv artifacts/docs-python site/python
+          mv artifacts/docs-rust site/rust
+          mv artifacts/docs-typescript site/typescript
+          cat > site/index.html <<'HTML'
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>OCPI Types — API documentation</title>
+          <style>
+            body{font:16px/1.6 system-ui,sans-serif;max-width:760px;margin:3rem auto;padding:0 1rem}
+            h1{margin-bottom:.25rem} p.sub{color:#555;margin-top:0}
+            ul{list-style:none;padding:0} li{margin:.5rem 0}
+            a{display:inline-block;padding:.6rem 1rem;border:1px solid #ddd;border-radius:8px;text-decoration:none;color:#0366d6}
+            a:hover{background:#f6f8fa}
+          </style>
+          <h1>OCPI Types</h1>
+          <p class="sub">Auto-generated type definitions for the OCPI protocol.</p>
+          <ul>
+            <li><a href="go/index.html">Go</a></li>
+            <li><a href="python/index.html">Python</a></li>
+            <li><a href="rust/index.html">Rust</a></li>
+            <li><a href="typescript/index.html">TypeScript</a></li>
+          </ul>
+          HTML
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -5,7 +5,7 @@
   "main": "index.ts",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/gaia-charge/ocpi-types.git"
+    "url": "git+https://github.com/evorada/ocpi-types.git"
   },
   "keywords": [
     "ocpi",
@@ -22,9 +22,9 @@
   "author": "Gaia Charge <contact@gaiacharge.com>",
   "license": "AGPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/gaia-charge/ocpi-types/issues"
+    "url": "https://github.com/evorada/ocpi-types/issues"
   },
-  "homepage": "https://github.com/gaia-charge/ocpi-types#readme",
+  "homepage": "https://github.com/evorada/ocpi-types#readme",
   "devDependencies": {
     "@ts-docs/default-docs-structure": "^0.4.4",
     "@ts-docs/ts-docs": "^0.4.4"
