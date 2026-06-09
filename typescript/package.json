@@ -14,7 +14,10 @@
     "electromobility"
   ],
   "scripts": {
-    "docs": "ts-docs index.ts"
+    "docs": "ts-docs index.ts",
+    "dedupe-keys": "node scripts/dedupe-keys.mjs --write",
+    "lint:dedupe-keys": "node scripts/dedupe-keys.mjs --check",
+    "typecheck": "tsc --noEmit --strict --lib es2017 index.ts"
   },
   "author": "Gaia Charge <contact@gaiacharge.com>",
   "license": "AGPL-3.0-or-later",

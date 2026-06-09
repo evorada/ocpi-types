@@ -1,0 +1,93 @@
+name: Compile-check generated types
+
+# Verifies that the code generated from the JSON schemas actually compiles in
+# every target language. Each language runs as its own job, so they execute in
+# parallel and a failure points straight at the affected language.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: compile-check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  go:
+    name: Go
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: stable
+      - name: Build and vet generated packages
+        working-directory: go
+        run: |
+          # Each version is its own subpackage (go/v211, go/v221, ...).
+          # A throwaway module lets `go build ./...` cover them all at once.
+          [ -f go.mod ] || go mod init ocpi-types-compile-check
+          go build ./...
+          go vet ./...
+
+  python:
+    name: Python
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install runtime deps
+        # quicktype's Python output uses python-dateutil to parse date/datetime fields.
+        run: pip install python-dateutil
+      - name: Import-check generated modules
+        run: |
+          set -e
+          for f in python/*.py; do
+            echo "import-check $f"
+            python -c "import importlib.util, sys; s = importlib.util.spec_from_file_location('m', sys.argv[1]); m = importlib.util.module_from_spec(s); s.loader.exec_module(m)" "$f"
+          done
+
+  rust:
+    name: Rust
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Compile-check generated crates
+        run: |
+          set -e
+          for f in rust/*.rs; do
+            echo "compile-check $f"
+            dir="$(mktemp -d)"
+            mkdir -p "$dir/src"
+            printf '[package]\nname = "ocpi_compile_check"\nversion = "0.0.0"\nedition = "2021"\n\n[dependencies]\nserde = { version = "1", features = ["derive"] }\nserde_json = "1"\n' > "$dir/Cargo.toml"
+            { echo "#![allow(dead_code)]"; cat "$f"; } > "$dir/src/lib.rs"
+            (cd "$dir" && cargo build)
+          done
+
+  typescript:
+    name: TypeScript
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: typescript/package-lock.json
+      - name: Install deps
+        working-directory: typescript
+        run: npm ci
+      - name: Check for duplicate object keys
+        working-directory: typescript
+        # Catches stale duplicate keys (TS1117) left behind by hand-tweaking the
+        # generated files. Fix locally with: npm run dedupe-keys
+        run: npm run lint:dedupe-keys
+      - name: Type-check generated definitions
+        working-directory: typescript
+        # index.ts re-exports every version, so this checks all of them at once.
+        run: npm run typecheck
