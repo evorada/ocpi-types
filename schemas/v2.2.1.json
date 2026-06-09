@@ -1,0 +1,2889 @@
+{
+    "title": "V2.2.1",
+    "definitions": {
+        "timestamp": {
+            "type": "string",
+            "pattern": "^([0-9]{4})-(1[0-2]|0[0-9])-([0-2][0-9]|3[0-1])T([0-1][0-9]|2[0-4]):[0-5][0-9]:[0-5][0-9](\\.[0-9]+)?(Z|[-+](0[0-9]|1[0-4]):[0-5][0-9])?$"
+        },
+        "display_text": {
+            "type": "object",
+            "properties": {
+                "language": {
+                    "type": "string",
+                    "minLength": 2,
+                    "maxLength": 2,
+                    "pattern": "^[A-Za-z]{2}$"
+                },
+                "text": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                }
+            },
+            "required": [
+                "language",
+                "text"
+            ],
+            "additionalProperties": false
+        },
+        "price": {
+            "type": "object",
+            "properties": {
+                "excl_vat": {
+                    "type": "number"
+                },
+                "incl_vat": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "excl_vat"
+            ],
+            "additionalProperties": false
+        },
+        "role": {
+            "type": "string",
+            "enum": [
+                "CPO",
+                "EMSP",
+                "HUB",
+                "NAP",
+                "NSP",
+                "OTHER",
+                "SCSP"
+            ]
+        },
+        "latitude": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 10,
+            "pattern": "^-?[0-9]{1,2}\\.[0-9]{5,7}$"
+        },
+        "longitude": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 11,
+            "pattern": "^-?[0-9]{1,3}\\.[0-9]{5,7}$"
+        },
+        "geo_location": {
+            "type": "object",
+            "properties": {
+                "latitude": {
+                    "$ref": "#/definitions/latitude"
+                },
+                "longitude": {
+                    "$ref": "#/definitions/longitude"
+                }
+            },
+            "required": [
+                "latitude",
+                "longitude"
+            ],
+            "additionalProperties": false
+        },
+        "additional_geo_location": {
+            "type": "object",
+            "properties": {
+                "latitude": {
+                    "$ref": "#/definitions/latitude"
+                },
+                "longitude": {
+                    "$ref": "#/definitions/longitude"
+                },
+                "name": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/display_text"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "latitude",
+                "longitude"
+            ],
+            "additionalProperties": false
+        },
+        "image_category": {
+            "type": "string",
+            "enum": [
+                "CHARGER",
+                "ENTRANCE",
+                "LOCATION",
+                "NETWORK",
+                "OPERATOR",
+                "OTHER",
+                "OWNER"
+            ]
+        },
+        "image": {
+            "type": "object",
+            "properties": {
+                "url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "thumbnail": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "format": "uri"
+                },
+                "category": {
+                    "$ref": "#/definitions/image_category"
+                },
+                "type": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 4
+                },
+                "width": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "maximum": 99999
+                },
+                "height": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "maximum": 99999
+                }
+            },
+            "required": [
+                "url",
+                "category",
+                "type"
+            ],
+            "additionalProperties": false
+        },
+        "business_details": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 100
+                },
+                "website": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "format": "uri"
+                },
+                "logo": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/image"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "energy_source_category": {
+            "type": "string",
+            "enum": [
+                "NUCLEAR",
+                "GENERAL_FOSSIL",
+                "COAL",
+                "GAS",
+                "GENERAL_GREEN",
+                "SOLAR",
+                "WIND",
+                "WATER"
+            ]
+        },
+        "energy_source": {
+            "type": "object",
+            "properties": {
+                "source": {
+                    "$ref": "#/definitions/energy_source_category"
+                },
+                "percentage": {
+                    "type": "number",
+                    "minimum": 0,
+                    "maximum": 100
+                }
+            },
+            "required": [
+                "source",
+                "percentage"
+            ],
+            "additionalProperties": false
+        },
+        "environmental_impact_category": {
+            "type": "string",
+            "enum": [
+                "NUCLEAR_WASTE",
+                "CARBON_DIOXIDE"
+            ]
+        },
+        "environmental_impact": {
+            "type": "object",
+            "properties": {
+                "category": {
+                    "$ref": "#/definitions/environmental_impact_category"
+                },
+                "amount": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "category",
+                "amount"
+            ],
+            "additionalProperties": false
+        },
+        "energy_mix": {
+            "type": "object",
+            "properties": {
+                "is_green_energy": {
+                    "type": "boolean"
+                },
+                "energy_sources": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/energy_source"
+                    }
+                },
+                "environ_impact": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/environmental_impact"
+                    }
+                },
+                "supplier_name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 64
+                },
+                "energy_product_name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 64
+                }
+            },
+            "required": [
+                "is_green_energy"
+            ],
+            "additionalProperties": false
+        },
+        "exceptional_period": {
+            "type": "object",
+            "properties": {
+                "period_begin": {
+                    "$ref": "#/definitions/timestamp"
+                },
+                "period_end": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "period_begin",
+                "period_end"
+            ],
+            "additionalProperties": false
+        },
+        "regular_hours": {
+            "type": "object",
+            "properties": {
+                "weekday": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 7
+                },
+                "period_begin": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 5,
+                    "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                },
+                "period_end": {
+                    "type": "string",
+                    "minLength": 5,
+                    "maxLength": 5,
+                    "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                }
+            },
+            "required": [
+                "weekday",
+                "period_begin",
+                "period_end"
+            ],
+            "additionalProperties": false
+        },
+        "hours": {
+            "type": "object",
+            "properties": {
+                "twentyfourseven": {
+                    "type": "boolean"
+                },
+                "regular_hours": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/regular_hours"
+                    }
+                },
+                "exceptional_openings": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/exceptional_period"
+                    }
+                },
+                "exceptional_closings": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/exceptional_period"
+                    }
+                }
+            },
+            "required": [
+                "twentyfourseven"
+            ],
+            "additionalProperties": false
+        },
+        "status": {
+            "type": "string",
+            "enum": [
+                "AVAILABLE",
+                "BLOCKED",
+                "CHARGING",
+                "INOPERATIVE",
+                "OUTOFORDER",
+                "PLANNED",
+                "REMOVED",
+                "RESERVED",
+                "UNKNOWN"
+            ]
+        },
+        "status_schedule": {
+            "type": "object",
+            "properties": {
+                "period_begin": {
+                    "$ref": "#/definitions/timestamp"
+                },
+                "period_end": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/timestamp"
+                        }
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/status"
+                }
+            },
+            "required": [
+                "period_begin",
+                "status"
+            ],
+            "additionalProperties": false
+        },
+        "capability": {
+            "type": "string",
+            "enum": [
+                "CHARGING_PROFILE_CAPABLE",
+                "CHARGING_PREFERENCES_CAPABLE",
+                "CHIP_CARD_SUPPORT",
+                "CONTACTLESS_CARD_SUPPORT",
+                "CREDIT_CARD_PAYABLE",
+                "DEBIT_CARD_PAYABLE",
+                "PED_TERMINAL",
+                "REMOTE_START_STOP_CAPABLE",
+                "RESERVABLE",
+                "RFID_READER",
+                "START_SESSION_CONNECTOR_REQUIRED",
+                "TOKEN_GROUP_CAPABLE",
+                "UNLOCK_CAPABLE"
+            ]
+        },
+        "connector_format": {
+            "type": "string",
+            "enum": [
+                "SOCKET",
+                "CABLE"
+            ]
+        },
+        "connector_type": {
+            "type": "string",
+            "enum": [
+                "CHADEMO",
+                "CHAOJI",
+                "DOMESTIC_A",
+                "DOMESTIC_B",
+                "DOMESTIC_C",
+                "DOMESTIC_D",
+                "DOMESTIC_E",
+                "DOMESTIC_F",
+                "DOMESTIC_G",
+                "DOMESTIC_H",
+                "DOMESTIC_I",
+                "DOMESTIC_J",
+                "DOMESTIC_K",
+                "DOMESTIC_L",
+                "DOMESTIC_M",
+                "DOMESTIC_N",
+                "DOMESTIC_O",
+                "GBT_AC",
+                "GBT_DC",
+                "IEC_60309_2_single_16",
+                "IEC_60309_2_three_16",
+                "IEC_60309_2_three_32",
+                "IEC_60309_2_three_64",
+                "IEC_62196_T1",
+                "IEC_62196_T1_COMBO",
+                "IEC_62196_T2",
+                "IEC_62196_T2_COMBO",
+                "IEC_62196_T3A",
+                "IEC_62196_T3C",
+                "NEMA_5_20",
+                "NEMA_6_30",
+                "NEMA_6_50",
+                "NEMA_10_30",
+                "NEMA_10_50",
+                "NEMA_14_30",
+                "NEMA_14_50",
+                "PANTOGRAPH_BOTTOM_UP",
+                "PANTOGRAPH_TOP_DOWN",
+                "TESLA_R",
+                "TESLA_S"
+            ]
+        },
+        "power_type": {
+            "type": "string",
+            "enum": [
+                "AC_1_PHASE",
+                "AC_2_PHASE",
+                "AC_2_PHASE_SPLIT",
+                "AC_3_PHASE",
+                "DC"
+            ]
+        },
+        "parking_restriction": {
+            "type": "string",
+            "enum": [
+                "EV_ONLY",
+                "PLUGGED",
+                "DISABLED",
+                "CUSTOMERS",
+                "MOTORCYCLES"
+            ]
+        },
+        "parking_type": {
+            "type": "string",
+            "enum": [
+                "ALONG_MOTORWAY",
+                "PARKING_GARAGE",
+                "PARKING_LOT",
+                "ON_DRIVEWAY",
+                "ON_STREET",
+                "UNDERGROUND_GARAGE"
+            ]
+        },
+        "facility": {
+            "type": "string",
+            "enum": [
+                "HOTEL",
+                "RESTAURANT",
+                "CAFE",
+                "MALL",
+                "SUPERMARKET",
+                "SPORT",
+                "RECREATION_AREA",
+                "NATURE",
+                "MUSEUM",
+                "BIKE_SHARING",
+                "BUS_STOP",
+                "TAXI_STAND",
+                "TRAM_STOP",
+                "METRO_STATION",
+                "TRAIN_STATION",
+                "AIRPORT",
+                "PARKING_LOT",
+                "CARPOOL_PARKING",
+                "FUEL_STATION",
+                "WIFI"
+            ]
+        },
+        "publish_token_type": {
+            "type": "object",
+            "properties": {
+                "uid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/token_type"
+                        }
+                    ]
+                },
+                "visual_number": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 64
+                },
+                "issuer": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 64
+                },
+                "group_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                }
+            },
+            "additionalProperties": false
+        },
+        "connector": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "standard": {
+                    "$ref": "#/definitions/connector_type"
+                },
+                "format": {
+                    "$ref": "#/definitions/connector_format"
+                },
+                "power_type": {
+                    "$ref": "#/definitions/power_type"
+                },
+                "max_voltage": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "max_amperage": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "max_electric_power": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "tariff_ids": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 36
+                    }
+                },
+                "terms_and_conditions": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "format": "uri"
+                },
+                "last_updated": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "id",
+                "standard",
+                "format",
+                "power_type",
+                "max_voltage",
+                "max_amperage",
+                "last_updated"
+            ],
+            "additionalProperties": false
+        },
+        "evse": {
+            "type": "object",
+            "properties": {
+                "uid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "evse_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 48
+                },
+                "status": {
+                    "$ref": "#/definitions/status"
+                },
+                "status_schedule": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/status_schedule"
+                    }
+                },
+                "capabilities": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/capability"
+                    }
+                },
+                "connectors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/connector"
+                    },
+                    "minItems": 1
+                },
+                "floor_level": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 4
+                },
+                "coordinates": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/geo_location"
+                        }
+                    ]
+                },
+                "physical_reference": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 16
+                },
+                "directions": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/display_text"
+                    }
+                },
+                "parking_restrictions": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/parking_restriction"
+                    }
+                },
+                "images": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/image"
+                    }
+                },
+                "last_updated": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "uid",
+                "status",
+                "connectors",
+                "last_updated"
+            ],
+            "additionalProperties": false
+        },
+        "location": {
+            "type": "object",
+            "properties": {
+                "country_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2
+                },
+                "party_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "publish": {
+                    "type": "boolean"
+                },
+                "publish_allowed_to": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/publish_token_type"
+                    }
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 255
+                },
+                "address": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 45
+                },
+                "city": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 45
+                },
+                "postal_code": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 10
+                },
+                "state": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 20
+                },
+                "country": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "coordinates": {
+                    "$ref": "#/definitions/geo_location"
+                },
+                "related_locations": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/additional_geo_location"
+                    }
+                },
+                "parking_type": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/parking_type"
+                        }
+                    ]
+                },
+                "evses": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/evse"
+                    }
+                },
+                "directions": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/display_text"
+                    }
+                },
+                "operator": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/business_details"
+                        }
+                    ]
+                },
+                "suboperator": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/business_details"
+                        }
+                    ]
+                },
+                "owner": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/business_details"
+                        }
+                    ]
+                },
+                "facilities": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/facility"
+                    }
+                },
+                "time_zone": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 255
+                },
+                "opening_times": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/hours"
+                        }
+                    ]
+                },
+                "charging_when_closed": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "images": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/image"
+                    }
+                },
+                "energy_mix": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/energy_mix"
+                        }
+                    ]
+                },
+                "last_updated": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "country_code",
+                "party_id",
+                "id",
+                "publish",
+                "address",
+                "city",
+                "country",
+                "coordinates",
+                "time_zone",
+                "last_updated"
+            ],
+            "additionalProperties": false
+        },
+        "tariff_dimension_type": {
+            "type": "string",
+            "enum": [
+                "ENERGY",
+                "FLAT",
+                "PARKING_TIME",
+                "TIME"
+            ]
+        },
+        "day_of_week": {
+            "type": "string",
+            "enum": [
+                "MONDAY",
+                "TUESDAY",
+                "WEDNESDAY",
+                "THURSDAY",
+                "FRIDAY",
+                "SATURDAY",
+                "SUNDAY"
+            ]
+        },
+        "reservation_restriction_type": {
+            "type": "string",
+            "enum": [
+                "RESERVATION",
+                "RESERVATION_EXPIRES"
+            ]
+        },
+        "tariff_type": {
+            "type": "string",
+            "enum": [
+                "AD_HOC_PAYMENT",
+                "PROFILE_CHEAP",
+                "PROFILE_FAST",
+                "PROFILE_GREEN",
+                "REGULAR"
+            ]
+        },
+        "price_component": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/tariff_dimension_type"
+                },
+                "price": {
+                    "type": "number"
+                },
+                "vat": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "step_size": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "type",
+                "price",
+                "step_size"
+            ],
+            "additionalProperties": false
+        },
+        "tariff_restrictions": {
+            "type": "object",
+            "properties": {
+                "start_time": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 5,
+                    "maxLength": 5,
+                    "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                },
+                "end_time": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 5,
+                    "maxLength": 5,
+                    "pattern": "^([0-1][0-9]|2[0-3]):[0-5][0-9]$"
+                },
+                "start_date": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 10,
+                    "maxLength": 10,
+                    "pattern": "^([12][0-9]{3})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+                },
+                "end_date": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 10,
+                    "maxLength": 10,
+                    "pattern": "^([12][0-9]{3})-(0[1-9]|1[0-2])-(0[1-9]|[12][0-9]|3[01])$"
+                },
+                "min_kwh": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "max_kwh": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "min_current": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "max_current": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "min_power": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "max_power": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "min_duration": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "max_duration": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "day_of_week": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/day_of_week"
+                    }
+                },
+                "reservation": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/reservation_restriction_type"
+                        }
+                    ]
+                }
+            },
+            "additionalProperties": false
+        },
+        "tariff_element": {
+            "type": "object",
+            "properties": {
+                "price_components": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/price_component"
+                    },
+                    "minItems": 1
+                },
+                "restrictions": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/tariff_restrictions"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "price_components"
+            ],
+            "additionalProperties": false
+        },
+        "tariff": {
+            "type": "object",
+            "properties": {
+                "country_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2
+                },
+                "party_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "currency": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "type": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/tariff_type"
+                        }
+                    ]
+                },
+                "tariff_alt_text": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/display_text"
+                    }
+                },
+                "tariff_alt_url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "format": "uri"
+                },
+                "min_price": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/price"
+                        }
+                    ]
+                },
+                "max_price": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/price"
+                        }
+                    ]
+                },
+                "elements": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/tariff_element"
+                    },
+                    "minItems": 1
+                },
+                "start_date_time": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/timestamp"
+                        }
+                    ]
+                },
+                "end_date_time": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/timestamp"
+                        }
+                    ]
+                },
+                "energy_mix": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/energy_mix"
+                        }
+                    ]
+                },
+                "last_updated": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "country_code",
+                "party_id",
+                "id",
+                "currency",
+                "elements",
+                "last_updated"
+            ],
+            "additionalProperties": false
+        },
+        "session_status": {
+            "type": "string",
+            "enum": [
+                "ACTIVE",
+                "COMPLETED",
+                "INVALID",
+                "PENDING",
+                "RESERVATION"
+            ]
+        },
+        "profile_type": {
+            "type": "string",
+            "enum": [
+                "CHEAP",
+                "FAST",
+                "GREEN",
+                "REGULAR"
+            ]
+        },
+        "charging_preferences_response": {
+            "type": "string",
+            "enum": [
+                "ACCEPTED",
+                "DEPARTURE_REQUIRED",
+                "ENERGY_NEED_REQUIRED",
+                "NOT_POSSIBLE",
+                "PROFILE_TYPE_NOT_SUPPORTED"
+            ]
+        },
+        "charging_preferences": {
+            "type": "object",
+            "properties": {
+                "profile_type": {
+                    "$ref": "#/definitions/profile_type"
+                },
+                "departure_time": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/timestamp"
+                        }
+                    ]
+                },
+                "energy_need": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "discharge_allowed": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                }
+            },
+            "required": [
+                "profile_type"
+            ],
+            "additionalProperties": false
+        },
+        "session": {
+            "type": "object",
+            "properties": {
+                "country_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2
+                },
+                "party_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "start_date_time": {
+                    "$ref": "#/definitions/timestamp"
+                },
+                "end_date_time": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/timestamp"
+                        }
+                    ]
+                },
+                "kwh": {
+                    "type": "number"
+                },
+                "cdr_token": {
+                    "$ref": "#/definitions/cdr_token"
+                },
+                "auth_method": {
+                    "$ref": "#/definitions/auth_method"
+                },
+                "authorization_reference": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "location_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "evse_uid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "connector_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "meter_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 255
+                },
+                "currency": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "charging_periods": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/charging_period"
+                    }
+                },
+                "total_cost": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/price"
+                        }
+                    ]
+                },
+                "status": {
+                    "$ref": "#/definitions/session_status"
+                },
+                "last_updated": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "country_code",
+                "party_id",
+                "id",
+                "start_date_time",
+                "kwh",
+                "cdr_token",
+                "auth_method",
+                "location_id",
+                "evse_uid",
+                "connector_id",
+                "currency",
+                "status",
+                "last_updated"
+            ],
+            "additionalProperties": false
+        },
+        "auth_method": {
+            "type": "string",
+            "enum": [
+                "AUTH_REQUEST",
+                "COMMAND",
+                "WHITELIST"
+            ]
+        },
+        "cdr_dimension_type": {
+            "type": "string",
+            "enum": [
+                "CURRENT",
+                "ENERGY",
+                "ENERGY_EXPORT",
+                "ENERGY_IMPORT",
+                "MAX_CURRENT",
+                "MIN_CURRENT",
+                "MAX_POWER",
+                "MIN_POWER",
+                "PARKING_TIME",
+                "POWER",
+                "RESERVATION_TIME",
+                "STATE_OF_CHARGE",
+                "TIME"
+            ]
+        },
+        "cdr_dimension": {
+            "type": "object",
+            "properties": {
+                "type": {
+                    "$ref": "#/definitions/cdr_dimension_type"
+                },
+                "volume": {
+                    "type": "number"
+                }
+            },
+            "required": [
+                "type",
+                "volume"
+            ],
+            "additionalProperties": false
+        },
+        "charging_period": {
+            "type": "object",
+            "properties": {
+                "start_date_time": {
+                    "$ref": "#/definitions/timestamp"
+                },
+                "dimensions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/cdr_dimension"
+                    },
+                    "minItems": 1
+                },
+                "tariff_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                }
+            },
+            "required": [
+                "start_date_time",
+                "dimensions"
+            ],
+            "additionalProperties": false
+        },
+        "cdr_token": {
+            "type": "object",
+            "properties": {
+                "country_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2
+                },
+                "party_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "uid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "type": {
+                    "$ref": "#/definitions/token_type"
+                },
+                "contract_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                }
+            },
+            "required": [
+                "country_code",
+                "party_id",
+                "uid",
+                "type",
+                "contract_id"
+            ],
+            "additionalProperties": false
+        },
+        "cdr_location": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "name": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 255
+                },
+                "address": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 45
+                },
+                "city": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 45
+                },
+                "postal_code": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 10
+                },
+                "state": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 20
+                },
+                "country": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "coordinates": {
+                    "$ref": "#/definitions/geo_location"
+                },
+                "evse_uid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "evse_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 48
+                },
+                "connector_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "connector_standard": {
+                    "$ref": "#/definitions/connector_type"
+                },
+                "connector_format": {
+                    "$ref": "#/definitions/connector_format"
+                },
+                "connector_power_type": {
+                    "$ref": "#/definitions/power_type"
+                }
+            },
+            "required": [
+                "id",
+                "address",
+                "city",
+                "country",
+                "coordinates",
+                "evse_uid",
+                "evse_id",
+                "connector_id",
+                "connector_standard",
+                "connector_format",
+                "connector_power_type"
+            ],
+            "additionalProperties": false
+        },
+        "signed_value": {
+            "type": "object",
+            "properties": {
+                "nature": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 32
+                },
+                "plain_data": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 512
+                },
+                "signed_data": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 5000
+                }
+            },
+            "required": [
+                "nature",
+                "plain_data",
+                "signed_data"
+            ],
+            "additionalProperties": false
+        },
+        "signed_data": {
+            "type": "object",
+            "properties": {
+                "encoding_method": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "encoding_method_version": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ]
+                },
+                "public_key": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 512
+                },
+                "signed_values": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/signed_value"
+                    },
+                    "minItems": 1
+                },
+                "url": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 512
+                }
+            },
+            "required": [
+                "encoding_method",
+                "signed_values"
+            ],
+            "additionalProperties": false
+        },
+        "cdr": {
+            "type": "object",
+            "properties": {
+                "country_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2
+                },
+                "party_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 39
+                },
+                "start_date_time": {
+                    "$ref": "#/definitions/timestamp"
+                },
+                "end_date_time": {
+                    "$ref": "#/definitions/timestamp"
+                },
+                "session_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "cdr_token": {
+                    "$ref": "#/definitions/cdr_token"
+                },
+                "auth_method": {
+                    "$ref": "#/definitions/auth_method"
+                },
+                "authorization_reference": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "cdr_location": {
+                    "$ref": "#/definitions/cdr_location"
+                },
+                "meter_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 255
+                },
+                "currency": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "tariffs": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/tariff"
+                    }
+                },
+                "charging_periods": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/charging_period"
+                    },
+                    "minItems": 1
+                },
+                "signed_data": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/signed_data"
+                        }
+                    ]
+                },
+                "total_cost": {
+                    "$ref": "#/definitions/price"
+                },
+                "total_fixed_cost": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/price"
+                        }
+                    ]
+                },
+                "total_energy": {
+                    "type": "number"
+                },
+                "total_energy_cost": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/price"
+                        }
+                    ]
+                },
+                "total_time": {
+                    "type": "number"
+                },
+                "total_time_cost": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/price"
+                        }
+                    ]
+                },
+                "total_parking_time": {
+                    "type": [
+                        "number",
+                        "null"
+                    ]
+                },
+                "total_parking_cost": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/price"
+                        }
+                    ]
+                },
+                "total_reservation_cost": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/price"
+                        }
+                    ]
+                },
+                "remark": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 255
+                },
+                "invoice_reference_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 39
+                },
+                "credit": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "credit_reference_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 39
+                },
+                "home_charging_compensation": {
+                    "type": [
+                        "boolean",
+                        "null"
+                    ]
+                },
+                "last_updated": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "country_code",
+                "party_id",
+                "id",
+                "start_date_time",
+                "end_date_time",
+                "cdr_token",
+                "auth_method",
+                "cdr_location",
+                "currency",
+                "charging_periods",
+                "total_cost",
+                "total_energy",
+                "total_time",
+                "last_updated"
+            ],
+            "additionalProperties": false
+        },
+        "token_type": {
+            "type": "string",
+            "enum": [
+                "AD_HOC_USER",
+                "APP_USER",
+                "OTHER",
+                "RFID"
+            ]
+        },
+        "whitelist_type": {
+            "type": "string",
+            "enum": [
+                "ALWAYS",
+                "ALLOWED",
+                "ALLOWED_OFFLINE",
+                "NEVER"
+            ]
+        },
+        "allowed_type": {
+            "type": "string",
+            "enum": [
+                "ALLOWED",
+                "BLOCKED",
+                "EXPIRED",
+                "NO_CREDIT",
+                "NOT_ALLOWED"
+            ]
+        },
+        "energy_contract": {
+            "type": "object",
+            "properties": {
+                "supplier_name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                },
+                "contract_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 64
+                }
+            },
+            "required": [
+                "supplier_name"
+            ],
+            "additionalProperties": false
+        },
+        "location_references": {
+            "type": "object",
+            "properties": {
+                "location_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "evse_uids": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 36
+                    }
+                }
+            },
+            "required": [
+                "location_id"
+            ],
+            "additionalProperties": false
+        },
+        "token": {
+            "type": "object",
+            "properties": {
+                "country_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2
+                },
+                "party_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "uid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "type": {
+                    "$ref": "#/definitions/token_type"
+                },
+                "contract_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "visual_number": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 64
+                },
+                "issuer": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                },
+                "group_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "valid": {
+                    "type": "boolean"
+                },
+                "whitelist": {
+                    "$ref": "#/definitions/whitelist_type"
+                },
+                "language": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 2,
+                    "maxLength": 2
+                },
+                "default_profile_type": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/profile_type"
+                        }
+                    ]
+                },
+                "energy_contract": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/energy_contract"
+                        }
+                    ]
+                },
+                "last_updated": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "country_code",
+                "party_id",
+                "uid",
+                "type",
+                "contract_id",
+                "issuer",
+                "valid",
+                "whitelist",
+                "last_updated"
+            ],
+            "additionalProperties": false
+        },
+        "authorization_info": {
+            "type": "object",
+            "properties": {
+                "allowed": {
+                    "$ref": "#/definitions/allowed_type"
+                },
+                "token": {
+                    "$ref": "#/definitions/token"
+                },
+                "location": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/location_references"
+                        }
+                    ]
+                },
+                "authorization_reference": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "info": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/display_text"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "allowed",
+                "token"
+            ],
+            "additionalProperties": false
+        },
+        "credentials_role": {
+            "type": "object",
+            "properties": {
+                "role": {
+                    "$ref": "#/definitions/role"
+                },
+                "business_details": {
+                    "$ref": "#/definitions/business_details"
+                },
+                "party_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "country_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2
+                }
+            },
+            "required": [
+                "role",
+                "business_details",
+                "party_id",
+                "country_code"
+            ],
+            "additionalProperties": false
+        },
+        "credentials": {
+            "type": "object",
+            "properties": {
+                "token": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "roles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/credentials_role"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "token",
+                "url",
+                "roles"
+            ],
+            "additionalProperties": false
+        },
+        "version_number": {
+            "type": "string",
+            "enum": [
+                "2.0",
+                "2.1",
+                "2.1.1",
+                "2.2",
+                "2.2.1"
+            ]
+        },
+        "module_id": {
+            "type": "string",
+            "enum": [
+                "cdrs",
+                "chargingprofiles",
+                "commands",
+                "credentials",
+                "hubclientinfo",
+                "locations",
+                "sessions",
+                "tariffs",
+                "tokens"
+            ]
+        },
+        "interface_role": {
+            "type": "string",
+            "enum": [
+                "SENDER",
+                "RECEIVER"
+            ]
+        },
+        "version": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "$ref": "#/definitions/version_number"
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "version",
+                "url"
+            ],
+            "additionalProperties": false
+        },
+        "endpoint": {
+            "type": "object",
+            "properties": {
+                "identifier": {
+                    "$ref": "#/definitions/module_id"
+                },
+                "role": {
+                    "$ref": "#/definitions/interface_role"
+                },
+                "url": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "identifier",
+                "role",
+                "url"
+            ],
+            "additionalProperties": false
+        },
+        "version_details": {
+            "type": "object",
+            "properties": {
+                "version": {
+                    "$ref": "#/definitions/version_number"
+                },
+                "endpoints": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/endpoint"
+                    },
+                    "minItems": 1
+                }
+            },
+            "required": [
+                "version",
+                "endpoints"
+            ],
+            "additionalProperties": false
+        },
+        "command_type": {
+            "type": "string",
+            "enum": [
+                "CANCEL_RESERVATION",
+                "RESERVE_NOW",
+                "START_SESSION",
+                "STOP_SESSION",
+                "UNLOCK_CONNECTOR"
+            ]
+        },
+        "command_response_type": {
+            "type": "string",
+            "enum": [
+                "NOT_SUPPORTED",
+                "REJECTED",
+                "ACCEPTED",
+                "UNKNOWN_SESSION"
+            ]
+        },
+        "command_result_type": {
+            "type": "string",
+            "enum": [
+                "ACCEPTED",
+                "CANCELED_RESERVATION",
+                "EVSE_OCCUPIED",
+                "EVSE_INOPERATIVE",
+                "FAILED",
+                "NOT_SUPPORTED",
+                "REJECTED",
+                "TIMEOUT",
+                "UNKNOWN_RESERVATION"
+            ]
+        },
+        "command_response": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "$ref": "#/definitions/command_response_type"
+                },
+                "timeout": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "message": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/display_text"
+                    }
+                }
+            },
+            "required": [
+                "result",
+                "timeout"
+            ],
+            "additionalProperties": false
+        },
+        "command_result": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "$ref": "#/definitions/command_result_type"
+                },
+                "message": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/display_text"
+                    }
+                }
+            },
+            "required": [
+                "result"
+            ],
+            "additionalProperties": false
+        },
+        "cancel_reservation": {
+            "type": "object",
+            "properties": {
+                "response_url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "reservation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                }
+            },
+            "required": [
+                "response_url",
+                "reservation_id"
+            ],
+            "additionalProperties": false
+        },
+        "reserve_now": {
+            "type": "object",
+            "properties": {
+                "response_url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "token": {
+                    "$ref": "#/definitions/token"
+                },
+                "expiry_date": {
+                    "$ref": "#/definitions/timestamp"
+                },
+                "reservation_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "location_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "evse_uid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "authorization_reference": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                }
+            },
+            "required": [
+                "response_url",
+                "token",
+                "expiry_date",
+                "reservation_id",
+                "location_id"
+            ],
+            "additionalProperties": false
+        },
+        "start_session": {
+            "type": "object",
+            "properties": {
+                "response_url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "token": {
+                    "$ref": "#/definitions/token"
+                },
+                "location_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "evse_uid": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "connector_id": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "authorization_reference": {
+                    "type": [
+                        "string",
+                        "null"
+                    ],
+                    "minLength": 1,
+                    "maxLength": 36
+                }
+            },
+            "required": [
+                "response_url",
+                "token",
+                "location_id"
+            ],
+            "additionalProperties": false
+        },
+        "stop_session": {
+            "type": "object",
+            "properties": {
+                "response_url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "session_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                }
+            },
+            "required": [
+                "response_url",
+                "session_id"
+            ],
+            "additionalProperties": false
+        },
+        "unlock_connector": {
+            "type": "object",
+            "properties": {
+                "response_url": {
+                    "type": "string",
+                    "format": "uri"
+                },
+                "location_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "evse_uid": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                },
+                "connector_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 36
+                }
+            },
+            "required": [
+                "response_url",
+                "location_id",
+                "evse_uid",
+                "connector_id"
+            ],
+            "additionalProperties": false
+        },
+        "charging_rate_unit": {
+            "type": "string",
+            "enum": [
+                "W",
+                "A"
+            ]
+        },
+        "charging_profile_response_type": {
+            "type": "string",
+            "enum": [
+                "ACCEPTED",
+                "NOT_SUPPORTED",
+                "REJECTED",
+                "TOO_OFTEN",
+                "UNKNOWN_SESSION"
+            ]
+        },
+        "charging_profile_result_type": {
+            "type": "string",
+            "enum": [
+                "ACCEPTED",
+                "REJECTED",
+                "UNKNOWN"
+            ]
+        },
+        "charging_profile_period": {
+            "type": "object",
+            "properties": {
+                "start_period": {
+                    "type": "integer",
+                    "minimum": 0
+                },
+                "limit": {
+                    "type": "number",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "start_period",
+                "limit"
+            ],
+            "additionalProperties": false
+        },
+        "charging_profile": {
+            "type": "object",
+            "properties": {
+                "start_date_time": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/timestamp"
+                        }
+                    ]
+                },
+                "duration": {
+                    "type": [
+                        "integer",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "charging_rate_unit": {
+                    "$ref": "#/definitions/charging_rate_unit"
+                },
+                "min_charging_rate": {
+                    "type": [
+                        "number",
+                        "null"
+                    ],
+                    "minimum": 0
+                },
+                "charging_profile_period": {
+                    "type": [
+                        "array",
+                        "null"
+                    ],
+                    "items": {
+                        "$ref": "#/definitions/charging_profile_period"
+                    }
+                }
+            },
+            "required": [
+                "charging_rate_unit"
+            ],
+            "additionalProperties": false
+        },
+        "active_charging_profile": {
+            "type": "object",
+            "properties": {
+                "start_date_time": {
+                    "$ref": "#/definitions/timestamp"
+                },
+                "charging_profile": {
+                    "$ref": "#/definitions/charging_profile"
+                }
+            },
+            "required": [
+                "start_date_time",
+                "charging_profile"
+            ],
+            "additionalProperties": false
+        },
+        "charging_profile_response": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "$ref": "#/definitions/charging_profile_response_type"
+                },
+                "timeout": {
+                    "type": "integer",
+                    "minimum": 0
+                }
+            },
+            "required": [
+                "result",
+                "timeout"
+            ],
+            "additionalProperties": false
+        },
+        "active_charging_profile_result": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "$ref": "#/definitions/charging_profile_result_type"
+                },
+                "profile": {
+                    "oneOf": [
+                        {
+                            "type": "null"
+                        },
+                        {
+                            "$ref": "#/definitions/active_charging_profile"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "result"
+            ],
+            "additionalProperties": false
+        },
+        "charging_profile_result": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "$ref": "#/definitions/charging_profile_result_type"
+                }
+            },
+            "required": [
+                "result"
+            ],
+            "additionalProperties": false
+        },
+        "clear_profile_result": {
+            "type": "object",
+            "properties": {
+                "result": {
+                    "$ref": "#/definitions/charging_profile_result_type"
+                }
+            },
+            "required": [
+                "result"
+            ],
+            "additionalProperties": false
+        },
+        "set_charging_profile": {
+            "type": "object",
+            "properties": {
+                "charging_profile": {
+                    "$ref": "#/definitions/charging_profile"
+                },
+                "response_url": {
+                    "type": "string",
+                    "format": "uri"
+                }
+            },
+            "required": [
+                "charging_profile",
+                "response_url"
+            ],
+            "additionalProperties": false
+        },
+        "connection_status": {
+            "type": "string",
+            "enum": [
+                "CONNECTED",
+                "OFFLINE",
+                "PLANNED",
+                "SUSPENDED"
+            ]
+        },
+        "hub_client_info": {
+            "type": "object",
+            "properties": {
+                "party_id": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 3
+                },
+                "country_code": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 2
+                },
+                "role": {
+                    "$ref": "#/definitions/role"
+                },
+                "status": {
+                    "$ref": "#/definitions/connection_status"
+                },
+                "last_updated": {
+                    "$ref": "#/definitions/timestamp"
+                }
+            },
+            "required": [
+                "party_id",
+                "country_code",
+                "role",
+                "status",
+                "last_updated"
+            ],
+            "additionalProperties": false
+        }
+    },
+    "type": "object",
+    "properties": {
+        "authorization_info": {
+            "$ref": "#/definitions/authorization_info"
+        },
+        "active_charging_profile": {
+            "$ref": "#/definitions/active_charging_profile"
+        },
+        "cancel_reservation": {
+            "$ref": "#/definitions/cancel_reservation"
+        },
+        "cdr": {
+            "$ref": "#/definitions/cdr"
+        },
+        "charging_preferences": {
+            "$ref": "#/definitions/charging_preferences"
+        },
+        "charging_profile": {
+            "$ref": "#/definitions/charging_profile"
+        },
+        "charging_profile_response": {
+            "$ref": "#/definitions/charging_profile_response"
+        },
+        "active_charging_profile_result": {
+            "$ref": "#/definitions/active_charging_profile_result"
+        },
+        "charging_profile_result": {
+            "$ref": "#/definitions/charging_profile_result"
+        },
+        "clear_profile_result": {
+            "$ref": "#/definitions/clear_profile_result"
+        },
+        "command_response": {
+            "$ref": "#/definitions/command_response"
+        },
+        "command_result": {
+            "$ref": "#/definitions/command_result"
+        },
+        "connector": {
+            "$ref": "#/definitions/connector"
+        },
+        "credentials": {
+            "$ref": "#/definitions/credentials"
+        },
+        "endpoint": {
+            "$ref": "#/definitions/endpoint"
+        },
+        "evse": {
+            "$ref": "#/definitions/evse"
+        },
+        "hub_client_info": {
+            "$ref": "#/definitions/hub_client_info"
+        },
+        "location": {
+            "$ref": "#/definitions/location"
+        },
+        "location_references": {
+            "$ref": "#/definitions/location_references"
+        },
+        "reserve_now": {
+            "$ref": "#/definitions/reserve_now"
+        },
+        "session": {
+            "$ref": "#/definitions/session"
+        },
+        "set_charging_profile": {
+            "$ref": "#/definitions/set_charging_profile"
+        },
+        "start_session": {
+            "$ref": "#/definitions/start_session"
+        },
+        "stop_session": {
+            "$ref": "#/definitions/stop_session"
+        },
+        "tariff": {
+            "$ref": "#/definitions/tariff"
+        },
+        "token": {
+            "$ref": "#/definitions/token"
+        },
+        "unlock_connector": {
+            "$ref": "#/definitions/unlock_connector"
+        },
+        "version": {
+            "$ref": "#/definitions/version"
+        },
+        "version_details": {
+            "$ref": "#/definitions/version_details"
+        }
+    }
+}
