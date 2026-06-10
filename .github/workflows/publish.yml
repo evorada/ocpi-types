@@ -67,7 +67,7 @@ jobs:
             cp "$f" "$build/ocpi_types/$mod.py"
           done
           : > "$build/ocpi_types/__init__.py"
-          cp README.md "$build/README.md"
+          cp python/README.md "$build/README.md"
           cat > "$build/pyproject.toml" <<EOF
           [build-system]
           requires = ["setuptools>=61"]

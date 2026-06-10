@@ -5,6 +5,7 @@ edition = "2021"
 description = "Auto-generated type definitions for the OCPI (Open Charge Point Interface) protocol."
 license = "AGPL-3.0-or-later"
 repository = "https://github.com/evorada/ocpi-types"
+readme = "README.md"
 keywords = ["ocpi", "emsp", "cpo", "electromobility"]
 categories = ["api-bindings"]
 

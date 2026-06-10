@@ -1,23 +1,41 @@
 # `ocpi-types-typescript`
 
-Auto-generated TypeScript definitions for the OCPI protocol.
+Auto-generated TypeScript type definitions for the [OCPI](https://evroaming.org/) (Open Charge Point Interface) protocol.
 
-Supporting OCPI 2.1.1 (`v2.1.1`), 2.2.1 (`v2.2.1`), and 2.3.0 — the latter as three variants: the core edition (`v2.3.0`), with the Payments module (`v2.3.0-payments`), and with the Bookings module (`v2.3.0-bookings`).
+📖 **Documentation:** https://evorada.github.io/ocpi-types/typescript/
 
 ## Installation
 
-```
+```sh
 npm install --save-dev ocpi-types-typescript
 ```
 
 ## Usage
 
-You can import all defined types as so:
+Each OCPI version is available as its own module. Import the types directly from
+the version you need:
 
 ```ts
-import type { Location } from 'ocpi-types-typescript/v2.1.1';
+import type { Session } from 'ocpi-types-typescript/v2.3.0';
 
-const myLocation: Location;
+const session: Session = JSON.parse(raw);
+console.log(session.id, session.status);
 ```
 
-You can consult [the documentation](https://evorada.github.io/ocpi-types/typescript/) for more information.
+Or via the namespace export, which exposes every version at once:
+
+```ts
+import { V230 } from 'ocpi-types-typescript';
+
+const session: V230.Session = JSON.parse(raw);
+```
+
+## Available versions
+
+| Import | Namespace | OCPI version |
+| --- | --- | --- |
+| `ocpi-types-typescript/v2.1.1` | `V211` | 2.1.1 |
+| `ocpi-types-typescript/v2.2.1` | `V221` | 2.2.1 |
+| `ocpi-types-typescript/v2.3.0` | `V230` | 2.3.0 |
+| `ocpi-types-typescript/v2.3.0-payments` | `V230Payments` | 2.3.0 + Payments |
+| `ocpi-types-typescript/v2.3.0-bookings` | `V230Bookings` | 2.3.0 + Bookings |
