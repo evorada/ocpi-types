@@ -54,17 +54,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
-      - name: Compile-check generated crates
-        run: |
-          set -e
-          for f in rust/*.rs; do
-            echo "compile-check $f"
-            dir="$(mktemp -d)"
-            mkdir -p "$dir/src"
-            printf '[package]\nname = "ocpi_compile_check"\nversion = "0.0.0"\nedition = "2021"\n\n[dependencies]\nserde = { version = "1", features = ["derive"] }\nserde_json = "1"\n' > "$dir/Cargo.toml"
-            { echo "#![allow(dead_code)]"; cat "$f"; } > "$dir/src/lib.rs"
-            (cd "$dir" && cargo build)
-          done
+      - name: Compile-check the crate
+        working-directory: rust
+        # The crate's lib.rs pulls in every version module, so this compiles all
+        # generated files at once.
+        run: cargo build
 
   typescript:
     name: TypeScript
