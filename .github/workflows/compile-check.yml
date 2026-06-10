@@ -24,13 +24,10 @@ jobs:
         with:
           go-version: stable
       - name: Build and vet generated packages
-        working-directory: go
         run: |
-          # Each version is its own subpackage (go/v211, go/v221, ...).
-          # A throwaway module lets `go build ./...` cover them all at once.
-          [ -f go.mod ] || go mod init ocpi-types-compile-check
-          go build ./...
-          go vet ./...
+          # The root go.mod covers every version subpackage (go/v211, go/v230, ...).
+          go build ./go/...
+          go vet ./go/...
 
   python:
     name: Python

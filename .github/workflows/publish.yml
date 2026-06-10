@@ -1,0 +1,140 @@
+name: Publish
+
+# Publishes every language binding to its registry when a version tag is pushed.
+# The tag (vX.Y.Z) drives the package version for all registries.
+#
+# All registries use OIDC Trusted Publishing — no token secrets are stored.
+# Required setup (one-time), configuring this repo + publish.yml as the trusted
+# publisher for each package:
+#   - npm:      Trusted Publisher for "ocpi-types-typescript".
+#   - crates.io Trusted Publisher for the "ocpi-types" crate.
+#   - PyPI:     Trusted Publisher for the "ocpi-types" project.
+#   - Go:       none — modules are served from the git tag; the job just warms
+#               the module proxy so pkg.go.dev picks the new version up promptly.
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  npm:
+    name: npm (TypeScript)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # npm Trusted Publishing (OIDC) + provenance
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          registry-url: "https://registry.npmjs.org"
+      - name: Update npm (Trusted Publishing requires >= 11.5.1)
+        run: npm install -g npm@latest
+      - name: Set version from tag and publish
+        working-directory: typescript
+        # No NODE_AUTH_TOKEN: npm authenticates via OIDC and adds provenance
+        # automatically when published through Trusted Publishing.
+        run: |
+          npm version "${GITHUB_REF_NAME#v}" --no-git-tag-version --allow-same-version
+          npm publish --access public
+
+  pypi:
+    name: PyPI (Python)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # PyPI Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Assemble the ocpi_types package
+        run: |
+          set -e
+          VER="${GITHUB_REF_NAME#v}"
+          build="$(mktemp -d)"
+          mkdir -p "$build/ocpi_types"
+          # The generated files are named after the schema version (v2.1.1.py),
+          # which is not an importable module name — map to underscores.
+          for f in python/*.py; do
+            mod="$(basename "$f" .py | sed 's/[^[:alnum:]]/_/g')"
+            cp "$f" "$build/ocpi_types/$mod.py"
+          done
+          : > "$build/ocpi_types/__init__.py"
+          cp README.md "$build/README.md"
+          cat > "$build/pyproject.toml" <<EOF
+          [build-system]
+          requires = ["setuptools>=61"]
+          build-backend = "setuptools.build_meta"
+
+          [project]
+          name = "ocpi-types"
+          version = "$VER"
+          description = "Auto-generated type definitions for the OCPI (Open Charge Point Interface) protocol."
+          readme = "README.md"
+          license = { text = "AGPL-3.0-or-later" }
+          requires-python = ">=3.8"
+          dependencies = ["python-dateutil"]
+          keywords = ["ocpi", "emsp", "cpo", "electromobility"]
+
+          [project.urls]
+          Homepage = "https://github.com/evorada/ocpi-types"
+
+          [tool.setuptools]
+          packages = ["ocpi_types"]
+          EOF
+          python -m pip install --upgrade build
+          (cd "$build" && python -m build)
+          mkdir -p dist && cp "$build"/dist/* dist/
+      - name: Publish to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: dist
+
+  crates:
+    name: crates.io (Rust)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # crates.io Trusted Publishing (OIDC)
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - name: Exchange OIDC token for a short-lived crates.io token
+        uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+      - name: Set version from tag and publish
+        working-directory: rust
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          sed -i "s/^version = .*/version = \"$VER\"/" Cargo.toml
+          cargo publish --allow-dirty
+        env:
+          CARGO_REGISTRY_TOKEN: ${{ steps.auth.outputs.token }}
+
+  go:
+    name: Go (warm module proxy)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Request the new version from the Go module proxy
+        run: |
+          set -e
+          MOD="github.com/evorada/ocpi-types"
+          VER="${GITHUB_REF_NAME}"
+          # Triggers proxy.golang.org to fetch the tag from the repo, which also
+          # makes it discoverable on pkg.go.dev. Retry while the tag propagates.
+          for i in 1 2 3 4 5 6; do
+            if curl -fsS "https://proxy.golang.org/${MOD}/@v/${VER}.info"; then
+              echo "Go module ${MOD}@${VER} is available."
+              exit 0
+            fi
+            echo "Not yet available, retrying ($i)…"
+            sleep 20
+          done
+          echo "::warning::Go proxy did not serve ${MOD}@${VER} yet; it should appear shortly."

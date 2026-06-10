@@ -4,3 +4,10 @@ node_modules
 # Generated API docs — built fresh and published by the docs workflow
 typescript/docs/
 typescript/_site_ts/
+
+# Build / publish artifacts
+rust/target/
+rust/Cargo.lock
+dist/
+*.egg-info/
+__pycache__/
