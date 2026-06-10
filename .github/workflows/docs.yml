@@ -99,7 +99,7 @@ jobs:
           printf '[package]\nname = "ocpi_types"\nversion = "0.0.0"\nedition = "2021"\n\n[dependencies]\nserde = { version = "1", features = ["derive"] }\nserde_json = "1"\n' > "$work/Cargo.toml"
           : > "$work/src/lib.rs"
           for f in rust/*.rs; do
-            mod="$(basename "$f" .rs | tr -d '.')"
+            mod="$(basename "$f" .rs | tr -cd '[:alnum:]')"
             cp "$f" "$work/src/$mod.rs"
             printf '#[allow(dead_code, non_camel_case_types)]\npub mod %s;\n' "$mod" >> "$work/src/lib.rs"
           done
